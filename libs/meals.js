@@ -19,6 +19,14 @@ export async function saveMeal(meal) {
   meal.slug = slugify(meal.title, { lower: true });
   meal.instructions = xss(meal.instructions);
 
+  // Check if a meal with the same slug already exists
+  const existingMeal = db
+    .prepare("SELECT 1 FROM meals WHERE slug = ?")
+    .get(meal.slug);
+  if (existingMeal) {
+    throw new Error("A meal with this slug already exists.");
+  }
+
   const extension = meal.image.name.split(".").pop();
   const fileName = `${meal.slug}.${extension}`;
 
